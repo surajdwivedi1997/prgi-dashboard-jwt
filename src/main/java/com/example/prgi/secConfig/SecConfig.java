@@ -36,6 +36,7 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
             // APIs
             .requestMatchers("/api/applications/**").hasAnyRole("ADMIN", "USER")
             .requestMatchers("/api/admin/**").hasRole("ADMIN")
+            .requestMatchers("/admin/regis").permitAll()
             // Everything else
             .anyRequest().authenticated()
         )
