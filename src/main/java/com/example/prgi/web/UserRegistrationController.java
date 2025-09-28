@@ -49,6 +49,14 @@ public class UserRegistrationController {
         return ResponseEntity.ok(savedUser);
     }
 
+    @PostMapping("/admin/regis")
+public ResponseEntity<?> registerAdmin(@RequestBody User user) {
+    user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+    user.setRole("ROLE_ADMIN");  // force admin
+    User savedUser = userService.save(user);
+    return ResponseEntity.ok(savedUser);
+}
+
     @GetMapping("/userlist")
     public List<User> getAllUsers() {
         return userService.find();
