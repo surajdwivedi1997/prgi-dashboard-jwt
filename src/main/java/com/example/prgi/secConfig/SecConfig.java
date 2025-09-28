@@ -26,29 +26,25 @@ public class SecConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        // 🔹 Public pages and static resources
-                        .requestMatchers("/", "/index.html", "/login.html", "/signup.html",
-                 "/css/**", "/js/**", "/images/**").permitAll()
-                        // 🔹 Public APIs (login & signup)
-                        .requestMatchers("/api/auth/**").permitAll()
-                        // 🔹 Application APIs (both user + admin)
-                        .requestMatchers("/api/applications/**").hasAnyRole("ADMIN", "USER")
-                        // 🔹 Admin-only APIs
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        // 🔹 Everything else requires authentication
-                        .anyRequest().authenticated()
-                )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+        .csrf(csrf -> csrf.disable()) // disable CSRF for APIs
+        .authorizeHttpRequests(auth -> auth
+            // Public endpoints
+            .requestMatchers("/login", "/regis").permitAll()
+            .requestMatchers("/index.html", "/login.html", "/css/**", "/js/**", "/images/**").permitAll()
+            // APIs
+            .requestMatchers("/api/applications/**").hasAnyRole("ADMIN", "USER")
+            .requestMatchers("/api/admin/**").hasRole("ADMIN")
+            // Everything else
+            .anyRequest().authenticated()
+        )
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authenticationProvider(authenticationProvider())
+        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
-    }
-
+    return http.build();
+}
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
