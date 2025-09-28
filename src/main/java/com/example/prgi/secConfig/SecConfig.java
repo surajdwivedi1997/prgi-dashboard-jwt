@@ -25,18 +25,19 @@ public class SecConfig {
         this.userDetailsService = userDetailsService;
     }
 
-    @Bean
+@Bean
 public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
-        .csrf(csrf -> csrf.disable()) // disable CSRF for APIs
+        .csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(auth -> auth
             // Public endpoints
-            .requestMatchers("/login", "/regis").permitAll()
+            .requestMatchers("/", "/login", "/regis", "/admin/regis").permitAll()
             .requestMatchers("/index.html", "/login.html", "/css/**", "/js/**", "/images/**").permitAll()
+
             // APIs
             .requestMatchers("/api/applications/**").hasAnyRole("ADMIN", "USER")
             .requestMatchers("/api/admin/**").hasRole("ADMIN")
-            .requestMatchers("/admin/regis").permitAll()
+
             // Everything else
             .anyRequest().authenticated()
         )
