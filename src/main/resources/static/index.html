@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>PRGI Applications Dashboard</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Modal styles */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(8px); }
+        .modal-content { background: var(--glass-bg); backdrop-filter: blur(20px); margin: 3% auto; padding: 32px; border-radius: 24px; width: 90%; max-width: 1200px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: var(--shadow-strong); border: 1px solid var(--glass-border); position: relative; overflow: hidden; }
+        .modal-content::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, var(--primary-purple), var(--accent-coral), var(--accent-mint), var(--accent-sunshine)); border-radius: 24px 24px 0 0; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--accent-lavender); }
+        .modal-header h3 { color: var(--primary-purple-dark); font-size: 24px; font-weight: 700; margin: 0; }
+        .modal .close { font-size: 32px; font-weight: bold; color: var(--accent-coral); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding: 8px; border-radius: 12px; background: rgba(255, 107, 107, 0.1); }
+        .modal .close:hover { color: white; background: var(--accent-coral); transform: scale(1.1) rotate(90deg); }
+        #modalBody { flex: 1; overflow-y: auto; overflow-x: auto; margin-top: 16px; }
+        .table-wrapper { overflow-x: auto; max-height: 70vh; border-radius: 16px; box-shadow: var(--shadow-soft); }
+        table { border-collapse: collapse; min-width: 800px; width: 100%; background: white; border-radius: 16px; overflow: hidden; }
+        th, td { border: 1px solid var(--neutral-200); padding: 12px 16px; font-size: 14px; text-align: left; white-space: nowrap; }
+        th { background: linear-gradient(135deg, var(--primary-purple), var(--primary-purple-light)); color: white; font-weight: 600; position: sticky; top: 0; z-index: 5; text-transform: uppercase; letter-spacing: 0.5px; font-size: 13px; }
+        td { background: white; transition: background-color 0.2s ease; }
+        tr:hover td { background: var(--accent-lavender); }
+        .spinner-container { display: flex; justify-content: center; align-items: center; height: 200px; }
+        .spinner { border: 6px solid var(--neutral-200); border-top: 6px solid var(--primary-purple); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #modalExcelBtn { background: linear-gradient(135deg, var(--success-green), #059669); color: white; border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); display: none; margin-right: 16px; }
+        #modalExcelBtn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); }
+        .header-container { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto; }
+        .header-left img { height: 80px; max-height: 100px; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(139, 92, 246, 0.3)); }
+        .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+        .header-right strong { font-size: 20px; font-weight: 700; color: var(--primary-purple-dark); text-shadow: 0 2px 4px rgba(139, 92, 246, 0.2); }
+        .filters { display: inline-block; }
+        .action-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .logout-btn { padding: 12px 20px; border: none; border-radius: 16px; font-size: 14px; font-weight: 600; background: linear-gradient(135deg, var(--accent-coral), #dc2626); color: white; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3); }
+        .logout-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4); }
+    </style>
+</head>
+<body>
+<header>
+    <div class="header-container">
+        <div class="header-left">
+            <img src="images/prgi-logo.png" alt="PRGI Logo">
+        </div>
+        <div class="header-right">
+            <div class="filters">
+                <strong>🌟 Application Status Report of Press Sewa Portal</strong>
+                <div class="action-row">
+                    <select id="rangeSelect">
+                        <option value="">-- Select Date Range --</option>
+                        <option value="2025-09-08|2025-09-18">📅 08-09-2025 to 18-09-2025</option>
+                    </select>
+                    <button id="btnApply">✨ Apply</button>
+                    <button id="btnExcel" style="display:none;">📊 Excel</button>
+                    <button id="logoutBtn" class="logout-btn">🚪 Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main id="modules"></main>
+
+Enhanced Modal
+<div id="dataModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">📋 Application Details</h3>
+            <div>
+                <button id="modalExcelBtn">📊 Export Excel</button>
+                <span class="close">&times;</span>
+            </div>
+        </div>
+        <div id="modalBody"></div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="js/app.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const token = localStorage.getItem("jwtToken");
+        if (!token) {
+            window.location.replace("login.html");
+            return;
+        }
+
+        function logout() {
+            localStorage.removeItem("jwtToken");
+            sessionStorage.clear();
+            window.location.replace("login.html");
+        }
+
+        // Prevent back/forward caching
+        window.history.pushState(null, "", window.location.href);
+        window.addEventListener("popstate", logout);
+
+        // Handle browser back-forward cache
+        window.addEventListener("pageshow", (e) => {
+            if (e.persisted && !localStorage.getItem("jwtToken")) {
+                window.location.replace("login.html");
+            }
+        });
+
+        buildShell();
+
+        const applyBtn = document.getElementById('btnApply');
+        const excelBtn = document.getElementById('btnExcel');
+        const modal = document.getElementById("dataModal");
+        const closeBtn = modal.querySelector(".close");
+        const modalExcelBtn = document.getElementById("modalExcelBtn");
+        const logoutBtn = document.getElementById("logoutBtn");
+
+        if (applyBtn) {
+            applyBtn.addEventListener('click', () => {
+                // Add loading animation
+                applyBtn.innerHTML = '⏳ Loading...';
+                applyBtn.disabled = true;
+
+                loadSummary().then(() => {
+                    excelBtn.style.display = "inline-block";
+                    attachCardClicks();
+                    applyBtn.innerHTML = '✨ Apply';
+                    applyBtn.disabled = false;
+                });
+            });
+        }
+
+        if (excelBtn) excelBtn.addEventListener('click', exportToExcel);
+        if (logoutBtn) logoutBtn.addEventListener("click", logout);
+
+        closeBtn.onclick = () => closeModal();
+        window.onclick = (e) => { if (e.target === modal) closeModal(); };
+
+        function attachCardClicks() {
+            const newAppCard = document.getElementById("card-NEW_REGISTRATION_NEW_APPLICATION");
+            if (newAppCard) {
+                newAppCard.addEventListener("click", () => {
+                    fetchAndShow("/api/new-registration/new-applications", "🆕 New Applications");
+                });
+            }
+            const deficientCard = document.getElementById("card-NEW_REGISTRATION_DEFICIENT_AWAITING_PUBLISHER");
+            if (deficientCard) {
+                deficientCard.addEventListener("click", () => {
+                    fetchAndShow("/api/new-registration/deficient", "⚠️ Deficient Applications");
+                });
+            }
+        }
+
+        function fetchAndShow(url, title) {
+            document.getElementById("modalTitle").textContent = title;
+            document.getElementById("modalBody").innerHTML =
+                "<div class='spinner-container'><div class='spinner'></div></div>";
+            modal.style.display = "block";
+            document.body.style.overflow = "hidden";
+
+            fetch(url, { headers: { "Authorization": "Bearer " + token } })
+                .then(r => {
+                    if (r.status === 401) {
+                        throw new Error("Unauthorized");
+                    }
+                    if (r.status === 403) {
+                        throw new Error("Forbidden");
+                    }
+                    return r.json();
+                })
+                .then(data => {
+                    document.getElementById("modalBody").innerHTML = buildTable(data);
+                    modalExcelBtn.style.display = "inline-block";
+                })
+                .catch(err => {
+                    console.error("Error:", err);
+                    if (err.message === "Unauthorized") {
+                        logout();
+                    } else if (err.message === "Forbidden") {
+                        document.getElementById("modalBody").innerHTML =
+                            `<p style="text-align:center; color:red; font-size:18px; padding:40px;">
+                        🚫 You do not have permission to view these details.
+                    </p>`;
+                    } else {
+                        alert("Something went wrong while fetching data.");
+                        closeModal();
+                    }
+                });
+        }
+        function closeModal() {
+            modal.style.display = "none";
+            document.body.style.overflow = "";
+            modalExcelBtn.style.display = "none";
+        }
+
+        function buildTable(data) {
+            if (!data || data.length === 0) return "<p style='text-align: center; color: var(--neutral-700); font-size: 18px; padding: 40px;'>📭 No records found.</p>";
+            let cols = Object.keys(data[0]);
+            let html = "<div class='table-wrapper'><table id='modalTable'><thead><tr>";
+            cols.forEach(c => html += `<th>${c}</th>`);
+            html += "</tr></thead><tbody>";
+            data.forEach(row => {
+                html += "<tr>";
+                cols.forEach(c => html += `<td>${row[c] ?? ""}</td>`);
+                html += "</tr>";
+            });
+            html += "</tbody></table></div>";
+            return html;
+        }
+
+        function exportModalTableToExcel(title) {
+            const table = document.getElementById("modalTable");
+            if (!table) return;
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.table_to_sheet(table);
+            XLSX.utils.book_append_sheet(wb, ws, "Data");
+            XLSX.writeFile(wb, `${title.replace(/\s+/g, "_")}.xlsx`);
+        }
+    });
+</script>
+</body>
+</html>
