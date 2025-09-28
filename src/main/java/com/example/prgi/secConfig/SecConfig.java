@@ -32,7 +32,7 @@ public class SecConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 🔹 Public pages and static resources
                         .requestMatchers("/", "/index.html", "/login.html", "/signup.html",
-                                         "/css/**", "/js/**", "/images/**").permitAll()
+                 "/css/**", "/js/**", "/images/**").permitAll()
                         // 🔹 Public APIs (login & signup)
                         .requestMatchers("/api/auth/**").permitAll()
                         // 🔹 Application APIs (both user + admin)
