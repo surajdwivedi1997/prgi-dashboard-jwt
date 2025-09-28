@@ -30,13 +30,16 @@ public class SecConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // 🔹 Allow public endpoints
-                        .requestMatchers("/login", "/regis").permitAll()
-                        .requestMatchers("/index.html", "/login.html", "/css/**", "/js/**", "/images/**").permitAll()
-                        // 🔹 APIs
+                        // 🔹 Public pages and static resources
+                        .requestMatchers("/", "/index.html", "/login.html", "/signup.html",
+                                         "/css/**", "/js/**", "/images/**").permitAll()
+                        // 🔹 Public APIs (login & signup)
+                        .requestMatchers("/api/auth/**").permitAll()
+                        // 🔹 Application APIs (both user + admin)
                         .requestMatchers("/api/applications/**").hasAnyRole("ADMIN", "USER")
+                        // 🔹 Admin-only APIs
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        // 🔹 everything else
+                        // 🔹 Everything else requires authentication
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
